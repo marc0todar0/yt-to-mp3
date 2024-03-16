@@ -29,6 +29,9 @@ for url in urls:
     try:
         yt = YouTube(url)
         stream = yt.streams.filter(only_audio=True).first()
+        if stream is None:
+            print("Error: No audio stream found for", url)
+            continue
         stream.download(folder)
         print("Downloaded mp4(only audio) " + url)
 
@@ -40,10 +43,14 @@ for url in urls:
         mp4_path = os.path.join(folder, file_name)
         mp3_path = os.path.join(folder, os.path.splitext(file_name)[0] + ".mp3")
         new_file = mp.AudioFileClip(mp4_path)
-        new_file.write_audiofile(mp3_path)
+
+        # Ensure correct audio duration by setting ffmpeg parameter
+        new_file.write_audiofile(
+            mp3_path, codec="libmp3lame", ffmpeg_params=["-q:a", "0"]
+        )
         os.remove(mp4_path)
 
-        # Modify MP3 author metadata
+        # Modify MP3 metadata
         audio = ID3(mp3_path)
         audio.add(
             APIC(
@@ -56,7 +63,7 @@ for url in urls:
         )
         audio.save()
 
-        # Modify MP3 author metadata
+        # Modify MP3 metadata
         audio = EasyID3(mp3_path)
         audio["artist"] = author  # Modify artist/author metadata
         audio["title"] = yt.title  # Modify title metadata
