@@ -1,2 +1,2 @@
 . env/bin/activate
-python3 main.py
+python3 main.py $1

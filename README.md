@@ -1,6 +1,6 @@
 # YT Video/Playlist to mp3 converter with metadata and thumbnail
 
-## How to use
+## How to start
 
 ```bash
 git clone https://github.com/Tod-dev/yt-to-mp3.git
@@ -9,6 +9,20 @@ python3 -m venv env
 . env/bin/activate
 pip3 install -r requirements.txt
 python3 main.py
+```
+
+## How to use
+
+### interactive mode
+
+```bash
+python3 main.py
+```
+
+### just provide the url (the path is saved in the config file)
+
+```bash
+python3 main.py https://www.youtube.com/watch?v=video_id
 ```
 
 ## You can download youtube videos as mp3 files with thumbnail and metadata (author, title, album) using this script.

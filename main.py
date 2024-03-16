@@ -8,8 +8,10 @@ import requests
 
 from input import get_user_input
 
-
-folder, url = get_user_input()
+urlProvided = None
+if len(os.sys.argv) > 1:
+    urlProvided = os.sys.argv[1]
+folder, url = get_user_input(urlProvided)
 
 
 def get_playlist_name(playlist):
