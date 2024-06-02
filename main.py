@@ -22,6 +22,11 @@ print("Downloading...")
 urls = [u for u in Playlist(url)] if "playlist" in url else [url]
 playlist_name = get_playlist_name(Playlist(url)) if "playlist" in url else None
 # add a directory to save the files if playlist_name is not None
+
+# remove "Album - " from the playlist name
+if playlist_name and "Album - " in playlist_name:
+    playlist_name = playlist_name.split(" - ")[1]
+
 if playlist_name:
     folder = os.path.join(folder, playlist_name)
     if not os.path.exists(folder):
