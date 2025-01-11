@@ -1,5 +1,5 @@
-from pytube import YouTube
-from pytube import Playlist
+from pytubefix import YouTube
+from pytubefix import Playlist
 import os
 import moviepy.editor as mp
 from mutagen.id3 import ID3, APIC, PictureType
@@ -32,8 +32,11 @@ if playlist_name:
     if not os.path.exists(folder):
         os.makedirs(folder)
 print("Downloading " + str(len(urls)) + " videos")
+max_track_number = len(urls)
+track_number = 0
 for url in urls:
     try:
+        track_number += 1
         yt = YouTube(url)
         stream = yt.streams.filter(only_audio=True).first()
         if stream is None:
@@ -76,6 +79,7 @@ for url in urls:
         audio["title"] = yt.title  # Modify title metadata
         if playlist_name:
             audio["album"] = playlist_name  # Modify album metadata
+            audio['tracknumber'] = f"{track_number}/{max_track_number}"
         audio.save()
 
     except Exception as e:
