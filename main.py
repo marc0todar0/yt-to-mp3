@@ -11,8 +11,32 @@ from typing import List, Dict, Optional
 import json
 
 def sanitize_string(text: str) -> str:
-    # Allow letters, numbers, spaces, dots, parentheses, and some special characters
-    return re.sub(r'[^a-zA-Z0-9\s_\-\.\(\)]', '', text)
+    # Remove or replace problematic characters
+    text = text.replace('⧸', '-')  # Replace special slash with hyphen
+    text = text.replace('@', 'at')  # Replace @ with 'at'
+    text = text.replace('/', '-')  # Replace forward slash with hyphen
+    text = text.replace('\\', '-')  # Replace backslash with hyphen
+    text = text.replace(':', '-')  # Replace colon with hyphen
+    text = text.replace('*', '')   # Remove asterisk
+    text = text.replace('?', '')   # Remove question mark
+    text = text.replace('"', '')   # Remove double quotes
+    text = text.replace('<', '')   # Remove less than
+    text = text.replace('>', '')   # Remove greater than
+    text = text.replace('|', '-')  # Replace pipe with hyphen
+    
+    # Allow letters, numbers, spaces, dots, parentheses, hyphens, and underscores
+    text = re.sub(r'[^a-zA-Z0-9\s_\-\.\(\)]', '', text)
+    
+    # Remove leading/trailing spaces and hyphens
+    text = text.strip(' -_')
+    
+    # Replace multiple spaces with single space
+    text = re.sub(r'\s+', ' ', text)
+    
+    # Replace multiple hyphens with single hyphen
+    text = re.sub(r'-+', '-', text)
+    
+    return text
 
 def clean_url(url: str) -> str:
     # Remove playlist parameter if present in a watch URL
@@ -98,7 +122,13 @@ def download_playlist(url: str, folder: str) -> None:
                 os.makedirs(folder)
             
             # Update output template with new folder
-            ydl_opts['outtmpl'] = os.path.join(folder, '%(title)s.%(ext)s')
+            if is_playlist:
+                ydl_opts['outtmpl'] = os.path.join(folder, '%(title)s.%(ext)s')
+            else:
+                # For single tracks, use sanitized filename
+                title = info.get('title', 'Unknown Title')
+                sanitized_title = sanitize_string(title)
+                ydl_opts['outtmpl'] = os.path.join(folder, f"{sanitized_title}.%(ext)s")
             
             # Download with updated options
             print(f"\nDownloading {'playlist' if is_playlist else 'track'}...")
@@ -114,11 +144,14 @@ def download_playlist(url: str, folder: str) -> None:
                     if entry:
                         try:
                             title = entry.get('title', f'Track {i}')
+                            # Try multiple variations of the filename
                             possible_filenames = [
                                 title,
                                 sanitize_string(title),
-                                title.replace('(', '').replace(')', ''),
-                                title.replace(' ', '')
+                                title.replace('/', '-').replace('\\', '-').replace('⧸', '-'),
+                                sanitize_string(title).replace(' ', ''),
+                                sanitize_string(title).replace('-', ''),
+                                sanitize_string(title).replace('_', '')
                             ]
                             
                             mp3_path = None
@@ -174,11 +207,14 @@ def download_playlist(url: str, folder: str) -> None:
                 # Single track metadata
                 try:
                     title = info.get('title', 'Unknown Title')
+                    # Try multiple variations of the filename
                     possible_filenames = [
                         title,
                         sanitize_string(title),
-                        title.replace('(', '').replace(')', ''),
-                        title.replace(' ', '')
+                        title.replace('/', '-').replace('\\', '-').replace('⧸', '-'),
+                        sanitize_string(title).replace(' ', ''),
+                        sanitize_string(title).replace('-', ''),
+                        sanitize_string(title).replace('_', '')
                     ]
                     
                     mp3_path = None
